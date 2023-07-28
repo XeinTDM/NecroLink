@@ -15,6 +15,11 @@
             <Setter Property="Foreground" Value="White" />
             <!--  Change the ProgressBar's color to white  -->
             <Setter Property="Background" Value="#0d1e3b" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Maximum" Value="100" />
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Width" Value="40" />
             <!--  Change the ProgressBar's background color to dark blue  -->
             <Setter Property="Template">
                 <Setter.Value>
@@ -74,48 +79,45 @@
             <Setter Property="Foreground" Value="white" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="FontFamily" Value="Ariel" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
+
+        <Style x:Key="Chk" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="white" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
     </Window.Resources>
 
     <Border Background="#0d1e3b">
         <Grid>
             <!--  Browsers  -->
             <Rectangle Margin="25,47,0,240" Style="{StaticResource RectangleStyle}" />
-            <!--  Browsers TEXT  -->
             <Label
-                Margin="25,20,623,401"
+                Margin="69,23,0,0"
                 Content="Browsers"
                 Style="{StaticResource LabelStyle}" />
 
-            <!--  Editing  -->
+            <!--  Programming  -->
             <Rectangle Margin="25,195,0,0" Style="{StaticResource RectangleStyle}" />
             <Label
                 Margin="56,217,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Content="Programming"
                 Style="{StaticResource LabelStyle}" />
 
             <!--  Communication  -->
             <Rectangle Margin="200,47,0,240" Style="{StaticResource RectangleStyle}" />
             <Label
-                Width="100"
                 Margin="225,21,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Content="Communication"
                 Style="{StaticResource LabelStyle}" />
 
             <!--  Hector hehe  -->
             <Rectangle Margin="200,243,0,45" Style="{StaticResource RectangleStyle}" />
             <Label
-                Width="50"
-                Height="23"
                 Margin="250,220,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Content="Hector"
                 Style="{StaticResource LabelStyle}" />
 
@@ -145,343 +147,163 @@
             <CheckBox
                 x:Name="ChkBrave"
                 Margin="33,56,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkBrave_Checked"
                 Content="Brave"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkOperaGX"
                 Margin="33,76,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkOperaGX_Checked"
                 Content="OperaGX"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkChrome"
                 Margin="33,96,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkChrome_Checked"
                 Content="Chrome"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkFireFox"
                 Margin="33,116,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkFireFox_Checked"
                 Content="FireFox"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
 
             <!--  Programming  -->
             <CheckBox
                 x:Name="ChkPython"
                 Margin="33,249,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkPython_Checked"
                 Content="Python"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkVSCode"
                 Margin="33,362,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkVSCode_Checked"
                 Content="VS Code"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkVSPro"
                 Margin="33,382,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkVCPro_Checked"
                 Content="VS Pro 2022"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
 
             <!--  Communication  -->
             <CheckBox
                 x:Name="ChkDiscord"
                 Margin="210,55,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkDiscord_Checked"
                 Content="Discord"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkSession"
                 Margin="210,75,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkSession_Checked"
                 Content="Session"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkTelegram"
                 Margin="210,95,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkTelegram_Checked"
                 Content="Telegram"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
 
-            <!--  Sketchy  -->
+            <!--  Hector  -->
             <CheckBox
                 x:Name="ChkGit"
                 Margin="210,250,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkGit_Checked"
                 Content="Git"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkRH"
                 Margin="210,290,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkRH_Checked"
                 Content="ResHacker"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkOpenVPN"
                 Margin="210,270,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkOpenVPN_Checked"
                 Content="OpenVPN"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
 
             <!--  Other  -->
             <CheckBox
                 x:Name="ChkSpotify"
                 Margin="400,80,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkSpotify_Checked"
                 Content="Spotify"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkSteam"
                 Margin="400,100,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkSteam_Checked"
                 Content="Steam"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkWinRAR"
                 Margin="400,120,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkWinRAR_Checked"
                 Content="WinRAR"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkVMware"
                 Margin="400,140,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkVMware_Checked"
                 Content="VMware"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkProtonVPN"
                 Margin="400,160,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkCC_Checked"
                 Content="ProtonVPN"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkCC"
                 Margin="400,180,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkCC_Checked"
                 Content="Creative Cloud"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
             <CheckBox
                 x:Name="ChkFigma"
                 Margin="400,200,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
                 Checked="ChkFigma_Checked"
                 Content="Figma"
-                Foreground="White" />
+                Style="{StaticResource Chk}" />
 
             <!--  !! Progress Percent !!  -->
 
             <!--  Browsers  -->
-            <ProgressBar
-                x:Name="progBrave"
-                Width="40"
-                Margin="0,55,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progOperaGX"
-                Width="40"
-                Margin="0,75,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progChrome"
-                Width="40"
-                Margin="0,95,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progFireFox"
-                Width="40"
-                Margin="0,115,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
+            <ProgressBar x:Name="progBrave" Margin="0,55,623,0" />
+            <ProgressBar x:Name="progOperaGX" Margin="0,75,623,0" />
+            <ProgressBar x:Name="progChrome" Margin="0,95,623,0" />
+            <ProgressBar x:Name="progFireFox" Margin="0,115,623,0" />
 
             <!--  Programming  -->
-            <ProgressBar
-                x:Name="progPython"
-                Width="40"
-                Margin="0,249,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progVSCode"
-                Width="40"
-                Margin="0,361,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progVSPro"
-                Width="40"
-                Margin="0,381,623,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
+            <ProgressBar x:Name="progPython" Margin="0,249,623,0" />
+            <ProgressBar x:Name="progVSCode" Margin="0,361,623,0" />
+            <ProgressBar x:Name="progVSPro" Margin="0,381,623,0" />
 
             <!--  Communication  -->
-            <ProgressBar
-                x:Name="progDiscord"
-                Width="40"
-                Margin="0,54,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progSession"
-                Width="40"
-                Margin="0,74,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progTelegram"
-                Width="40"
-                Margin="0,95,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
+            <ProgressBar x:Name="progDiscord" Margin="0,54,448,0" />
+            <ProgressBar x:Name="progSession" Margin="0,74,448,0" />
+            <ProgressBar x:Name="progTelegram" Margin="0,95,448,0" />
 
             <!--  Hector  -->
-            <ProgressBar
-                x:Name="progGit"
-                Width="40"
-                Margin="0,249,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progRH"
-                Width="40"
-                Margin="0,289,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progOpenVPN"
-                Width="40"
-                Margin="0,269,448,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
+            <ProgressBar x:Name="progGit" Margin="0,249,448,0" />
+            <ProgressBar x:Name="progRH" Margin="0,289,448,0" />
+            <ProgressBar x:Name="progOpenVPN" Margin="0,269,448,0" />
 
             <!--  Other  -->
-            <ProgressBar
-                x:Name="progSpotify"
-                Width="40"
-                Margin="0,80,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progSteam"
-                Width="40"
-                Margin="0,100,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progWinRAR"
-                Width="40"
-                Margin="0,120,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progVMware"
-                Width="40"
-                Margin="0,140,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progProtonVPN"
-                Width="40"
-                Margin="0,160,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progCC"
-                Width="40"
-                Margin="0,180,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
-            <ProgressBar
-                x:Name="progFigma"
-                Width="40"
-                Margin="0,200,249,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Maximum="100"
-                Minimum="0" />
+            <ProgressBar x:Name="progSpotify" Margin="0,80,249,0" />
+            <ProgressBar x:Name="progSteam" Margin="0,100,249,0" />
+            <ProgressBar x:Name="progWinRAR" Margin="0,120,249,0" />
+            <ProgressBar x:Name="progVMware" Margin="0,140,249,0" />
+            <ProgressBar x:Name="progProtonVPN" Margin="0,160,249,0" />
+            <ProgressBar x:Name="progCC" Margin="0,180,249,0" />
+            <ProgressBar x:Name="progFigma" Margin="0,200,249,0" />
 
 
             <!--  Download Speed & TimeLeft  -->
@@ -518,8 +340,8 @@
                 Content="Cancel Download" />
             <!--  Speed Limit  -->
             <Label
-                Width="114"
-                Height="27"
+                Width="115"
+                Height="26"
                 Margin="406,376,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"

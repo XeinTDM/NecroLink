@@ -23,7 +23,7 @@ namespace NecroLink
             DownloadCompleted += (sender, e) => { };
         }
 
-        public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken)
+        public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken, IProgress<int> progress)
         {
             var result = new DownloadResult();
 
@@ -37,7 +37,7 @@ namespace NecroLink
 
                 var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
                 var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                var streamToReadFrom = await response.Content.ReadAsStreamAsync();
+                var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken);
                 var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
                 {
                     var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
@@ -55,11 +55,12 @@ namespace NecroLink
                         {
                             var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
                             Logger.Info($"Download speed: {speed} bytes/second");
-
-                            // Return the old buffer to the pool and rent a new one
                             pool.Return(buffer);
                             buffer = pool.Rent();
-                            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs((int)((double)totalBytesRead / totalBytes * 100), null));
+
+                            // Report the progress
+                            progress?.Report((int)((double)totalBytesRead / totalBytes * 100));
+
                             stopwatch.Restart();
                             if (_speedLimit > 0)
                             {

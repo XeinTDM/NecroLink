@@ -18,6 +18,7 @@ namespace NecroLink
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private CancellationTokenSource cancellationTokenSource;
         private readonly FileDownloaderPool downloaderPool;
+        private readonly DownloadManager downloadManager;
         private int successfulDownloads = 0;
         private int unsuccessfulDownloads = 0;
         private int speedLimit = 0;
@@ -26,6 +27,7 @@ namespace NecroLink
         {
             cancellationTokenSource = new CancellationTokenSource();
             downloaderPool = new FileDownloaderPool(10, 1000);
+            downloadManager = new DownloadManager(10, 1000);
             InitializeComponent();
         }
 
@@ -88,69 +90,45 @@ namespace NecroLink
 
         private async void StartNextDownload()
         {
-            // Get the path to the desktop folder
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            // Combine with the "programs" folder name
             string programsFolderPath = Path.Combine(desktopPath, "programs");
-
-            // Create the folder if it doesn't exist
             Directory.CreateDirectory(programsFolderPath);
 
             if (downloadQueue.Count == 0) return;
 
-            // Specify maximum number of concurrent downloads
             const int maxConcurrentDownloads = 3;
-
-            // Prepare a list of tasks
-            var downloadTasks = downloadQueue.Select(item => DownloadItemAsync(item)).ToList();
-            await Task.WhenAll(downloadTasks);
+            var downloadTasks = new List<Task<DownloadResult>>();
 
             while (downloadQueue.Count > 0 && downloadTasks.Count < maxConcurrentDownloads)
             {
                 var (url, fileName, progressBar) = downloadQueue[0];
                 downloadQueue.RemoveAt(0);
-                lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
+                lstDownloadQueue.Items.RemoveAt(0);
 
-                var downloader = new FileDownloader(speedLimit);
-                downloader.ProgressChanged += (s, e) =>
-                {
-                    progressBar.Value = e.ProgressPercentage;
-                };
-
-                // Add this code at the end of the StartNextDownload method, after the while loop
-                if (downloadQueue.Count == 0 && downloadTasks.Count == 0)
-                {
-                    MessageBox.Show($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
-                }
-
-                downloadTasks.Add(downloader.TryDownloadAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), cancellationTokenSource.Token));
+                downloadTasks.Add((Task<DownloadResult>)DownloadItemAsync(url, Path.Combine(programsFolderPath, fileName), progressBar));
             }
 
-            // When any task completes, remove it from the list and start a new download if any remain
-            while (downloadTasks.Count > 0)
+            await Task.WhenAll(downloadTasks);
+
+            if (downloadTasks.Count == 0)
             {
-                var completedTask = await Task.WhenAny(downloadTasks);
-                downloadTasks.Remove(completedTask);
+                ShowResultsNonBlocking($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
+            }
+        }
 
-                if (downloadQueue.Count > 0)
-                {
-                    var (url, fileName, progressBar) = downloadQueue[0];
-                    downloadQueue.RemoveAt(0);
-                    lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
+        private async Task DownloadItemAsync(string url, string destinationPath, ProgressBar progressBar)
+        {
+            DownloadResult result = await downloadManager.DownloadFileAsync(url, destinationPath, progressBar);
 
-                    var downloader = new FileDownloader(speedLimit);
-                    downloader.ProgressChanged += (s, e) =>
-                    {
-                        progressBar.Value = e.ProgressPercentage;
-                    };
-
-                    downloadTasks.Add(downloader.TryDownloadAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), cancellationTokenSource.Token));
-                }
-                if (downloadTasks.Count == 0)
-                {
-                    ShowResultsNonBlocking($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
-                }
+            if (result.Success)
+            {
+                successfulDownloads++;
+                Logger.Info($"Successfully downloaded {Path.GetFileName(destinationPath)}");
+            }
+            else
+            {
+                unsuccessfulDownloads++;
+                Logger.Error($"Failed to download {Path.GetFileName(destinationPath)}. Error: {result.ErrorMessage}");
             }
         }
 

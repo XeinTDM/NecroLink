@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NecroLink
 {
-    public class BufferPool
+    public class BufferPool : IDisposable
     {
         private readonly Stack<byte[]> pool;
         private readonly int bufferSize;
@@ -20,6 +20,27 @@ namespace NecroLink
             {
                 pool.Push(new byte[bufferSize]);
             }
+        }
+
+        private bool disposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // Return all buffers to the pool
+                }
+
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public byte[] Rent()
