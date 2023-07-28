@@ -1,0 +1,176 @@
+﻿<Window x:Class="NecroLink.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Downloader" Height="450" Width="800"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="None"
+        AllowsTransparency="True" Background="Transparent"
+        >
+    <Window.Resources>
+        <Style TargetType="ProgressBar">
+            <Setter Property="Foreground" Value="White"/>
+            <!-- Change the ProgressBar's color to white -->
+            <Setter Property="Background" Value="#0d1e3b"/>
+            <!-- Change the ProgressBar's background color to dark blue -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <!-- Visual representation of the ProgressBar -->
+                            <Rectangle RadiusX="5" RadiusY="5" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{TemplateBinding Background}"/>
+                                    <!-- Use the Background property as the fill color -->
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Rectangle RadiusX="5" RadiusY="5" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{TemplateBinding Foreground}"/>
+                                    <!-- Use the Foreground property as the progress color -->
+                                </Rectangle.Fill>
+                                <Rectangle.Width>
+                                    <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                </Rectangle.Width>
+                            </Rectangle>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, Mode=OneWay, StringFormat={}{0}%}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="Border">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#11274d"/>
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+
+        <Style x:Key="RectangleStyle" TargetType="Rectangle">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="160"/>
+            <Setter Property="Fill" Value="#0a162b"/>
+            <Setter Property="RadiusX" Value="5"/>
+            <Setter Property="RadiusY" Value="5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="LabelStyle" TargetType="Label">
+            <Setter Property="Foreground" Value="white"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Ariel"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#0d1e3b">
+        <Grid>
+            <!-- Browsers -->
+            <Rectangle Style="{StaticResource RectangleStyle}" Margin="25,47,0,240"/>
+            <!-- Browsers TEXT -->
+            <Label Style="{StaticResource LabelStyle}" Content="Browsers" Margin="25,20,623,401"/>
+
+            <!-- Editing -->
+            <Rectangle Style="{StaticResource RectangleStyle}" Margin="25,195,0,0"/>
+            <Label Style="{StaticResource LabelStyle}" Content="Programming" Margin="56,217,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+            <!-- Communication -->
+            <Rectangle Style="{StaticResource RectangleStyle}" Margin="200,47,0,240"/>
+            <Label Style="{StaticResource LabelStyle}" Content="Communication" Margin="225,21,0,0" Width="100" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+            <!-- Hector hehe -->
+            <Rectangle Style="{StaticResource RectangleStyle}" Margin="200,243,0,45"/>
+            <Label Style="{StaticResource LabelStyle}" Content="Hector" Margin="250,220,0,0" Width="50" Height="23" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+            <!-- Other -->
+            <Rectangle Width="150" Height="298" Fill="#0a162b" RadiusX="5" RadiusY="5"
+                   HorizontalAlignment="Left" VerticalAlignment="Center" Margin="389,0,0,0"/>
+            <!-- Other TEXT -->
+            <Label Content="Other" Foreground="white" Margin="441,51,0,0"
+                   FontWeight="Bold" FontFamily="Ariel"
+                   VerticalAlignment="Top" HorizontalAlignment="Left" Width="44"
+                   ></Label>
+
+            <!-- !! Program Checkboxes !! -->
+
+            <!-- Browsers -->
+            <CheckBox x:Name="ChkBrave" Foreground="White" Content="Brave" HorizontalAlignment="Left" Margin="33,56,0,0" VerticalAlignment="Top" Checked="ChkBrave_Checked"/>
+            <CheckBox x:Name="ChkOperaGX" Foreground="White" Content="OperaGX" HorizontalAlignment="Left" Margin="33,76,0,0" VerticalAlignment="Top" Checked="ChkOperaGX_Checked"/>
+            <CheckBox x:Name="ChkChrome" Foreground="White" Content="Chrome" HorizontalAlignment="Left" Margin="33,96,0,0" VerticalAlignment="Top" Checked="ChkChrome_Checked"/>
+            <CheckBox x:Name="ChkFireFox" Foreground="White" Content="FireFox" HorizontalAlignment="Left" Margin="33,116,0,0" VerticalAlignment="Top" Checked="ChkFireFox_Checked"/>
+
+            <!-- Programming -->
+            <CheckBox x:Name="ChkPython" Foreground="White" Content="Python" HorizontalAlignment="Left" Margin="33,249,0,0" VerticalAlignment="Top" Checked="ChkPython_Checked"/>
+            <CheckBox x:Name="ChkVSCode" Foreground="White" Content="VS Code" HorizontalAlignment="Left" Margin="33,362,0,0" VerticalAlignment="Top" Checked="ChkVSCode_Checked"/>
+            <CheckBox x:Name="ChkVSPro" Foreground="White" Content="VS Pro 2022" HorizontalAlignment="Left" Margin="33,382,0,0" VerticalAlignment="Top" Checked="ChkVCPro_Checked"/>
+
+            <!-- Communication -->
+            <CheckBox x:Name="ChkDiscord" Foreground="White" Content="Discord" HorizontalAlignment="Left" Margin="210,55,0,0" VerticalAlignment="Top" Checked="ChkDiscord_Checked"/>
+            <CheckBox x:Name="ChkSession" Foreground="White" Content="Session" HorizontalAlignment="Left" Margin="210,75,0,0" VerticalAlignment="Top" Checked="ChkSession_Checked"/>
+            <CheckBox x:Name="ChkTelegram" Foreground="White" Content="Telegram" HorizontalAlignment="Left" Margin="210,95,0,0" VerticalAlignment="Top" Checked="ChkTelegram_Checked"/>
+
+            <!-- Sketchy -->
+            <CheckBox x:Name="ChkGit" Foreground="White" Content="Git" HorizontalAlignment="Left" Margin="210,250,0,0" VerticalAlignment="Top" Checked="ChkGit_Checked"/>
+            <CheckBox x:Name="ChkRH" Foreground="White" Content="ResHacker" HorizontalAlignment="Left" Margin="210,290,0,0" VerticalAlignment="Top" Checked="ChkRH_Checked"/>
+            <CheckBox x:Name="ChkOpenVPN" Foreground="White" Content="OpenVPN" HorizontalAlignment="Left" Margin="210,270,0,0" VerticalAlignment="Top" Checked="ChkOpenVPN_Checked"/>
+
+            <!-- Other -->
+            <CheckBox x:Name="ChkSpotify" Foreground="White" Content="Spotify" HorizontalAlignment="Left" Margin="400,80,0,0" VerticalAlignment="Top" Checked="ChkSpotify_Checked"/>
+            <CheckBox x:Name="ChkSteam" Foreground="White" Content="Steam" HorizontalAlignment="Left" Margin="400,100,0,0" VerticalAlignment="Top" Checked="ChkSteam_Checked"/>
+            <CheckBox x:Name="ChkWinRAR" Foreground="White" Content="WinRAR" HorizontalAlignment="Left" Margin="400,120,0,0" VerticalAlignment="Top" Checked="ChkWinRAR_Checked"/>
+            <CheckBox x:Name="ChkVMware" Foreground="White" Content="VMware" HorizontalAlignment="Left" Margin="400,140,0,0" VerticalAlignment="Top" Checked="ChkVMware_Checked"/>
+            <CheckBox x:Name="ChkProtonVPN" Foreground="White" Content="ProtonVPN" HorizontalAlignment="Left" Margin="400,160,0,0" VerticalAlignment="Top" Checked="ChkCC_Checked"/>
+            <CheckBox x:Name="ChkCC" Foreground="White" Content="Creative Cloud" HorizontalAlignment="Left" Margin="400,180,0,0" VerticalAlignment="Top" Checked="ChkCC_Checked"/>
+            <CheckBox x:Name="ChkFigma" Foreground="White" Content="Figma" HorizontalAlignment="Left" Margin="400,200,0,0" VerticalAlignment="Top" Checked="ChkFigma_Checked"/>
+
+            <!-- !! Progress Percent !! -->
+
+            <!-- Browsers -->
+            <ProgressBar x:Name="progBrave" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,55,623,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progOperaGX" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,75,623,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progChrome" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,95,623,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progFireFox" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,115,623,0" VerticalAlignment="Top"/>
+
+            <!-- Programming -->
+            <ProgressBar x:Name="progPython" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,249,623,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progVSCode" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,361,623,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progVSPro" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,381,623,0" VerticalAlignment="Top"/>
+
+            <!-- Communication -->
+            <ProgressBar x:Name="progDiscord" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,54,448,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progSession" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,74,448,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progTelegram" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,95,448,0" VerticalAlignment="Top"/>
+
+            <!-- Hector -->
+            <ProgressBar x:Name="progGit" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,249,448,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progRH" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,289,448,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progOpenVPN" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,269,448,0" VerticalAlignment="Top"/>
+
+            <!-- Other -->
+            <ProgressBar x:Name="progSpotify" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,79,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progSteam" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,99,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progWinRAR" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,119,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progVMware" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,139,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progProtonVPN" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,159,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progCC" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,179,259,0" VerticalAlignment="Top"/>
+            <ProgressBar x:Name="progFigma" Minimum="0" Maximum="100" HorizontalAlignment="Right" Width="40" Margin="0,199,259,0" VerticalAlignment="Top"/>
+
+
+            <!-- Download Speed & TimeLeft -->
+            <Label x:Name="lblDownloadSpeed" Foreground="White" Content="Download Speed: " HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,284,91,0"/>
+            <Label x:Name="lblEstimatedTimeLeft" Foreground="White" Content="Estimated Time Left: " HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,304,77,0"/>
+            <!-- Download & Cancel Button -->
+            <Button x:Name="BtnDownload" Content="Download" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="593,404,0,0" Click="BtnDownload_Click"/>
+            <Button x:Name="BtnCancelDownload" Content="Cancel Download" HorizontalAlignment="Left" VerticalAlignment="Top" Width="110" Margin="673,404,0,0" Click="BtnCancelDownload_Click"/>
+            <!-- Speed Limit -->
+            <Label Content="Speed Limit (MB/s)" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="406,376,0,0" Width="114" Height="27"/>
+            <TextBox x:Name="txtSpeedLimit" Width="70" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="406,400,0,0"/>
+            <Button x:Name="BtnApplyLimit" Content="Apply" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Margin="481,399,0,0" Click="BtnApplyLimit_Click"/>
+            <!-- (De)Select -->
+            <Button x:Name="BtnSelectAll" Content="Select All" HorizontalAlignment="Left" VerticalAlignment="Top" Width="65" Margin="25,411,0,0" Click="BtnSelectAll_Click"/>
+            <Button x:Name="BtnDeselectAll" Content="Deselect All" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="100,411,0,0" Click="BtnDeselectAll_Click"/>
+            <!-- Queue System -->
+            <Label Content="Download Queue" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="624,56,0,0" FontFamily="Ariel" FontWeight="Medium"/>
+            <ListBox x:Name="lstDownloadQueue" AllowDrop="True" DragEnter="ListBox_Drop" PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="200" Margin="601,82,0,0" Background="#FF0A162B" BorderBrush="{x:Null}"/>
+
+        </Grid>
+    </Border>
+</Window>
