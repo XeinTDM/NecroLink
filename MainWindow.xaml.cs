@@ -116,10 +116,9 @@ namespace NecroLink
             }
         }
 
-        private async Task DownloadItemAsync(string url, string destinationPath, ProgressBar progressBar)
+        private async Task<DownloadResult> DownloadItemAsync(string url, string destinationPath, ProgressBar progressBar)
         {
             DownloadResult result = await downloadManager.DownloadFileAsync(url, destinationPath, progressBar);
-
             if (result.Success)
             {
                 successfulDownloads++;
@@ -130,14 +129,13 @@ namespace NecroLink
                 unsuccessfulDownloads++;
                 Logger.Error($"Failed to download {Path.GetFileName(destinationPath)}. Error: {result.ErrorMessage}");
             }
+            return result;
         }
 
-        private async Task DownloadItemAsync((string url, string fileName, ProgressBar progressBar) item)
+        private async Task<DownloadResult> DownloadItemAsync((string url, string fileName, ProgressBar progressBar) item)
         {
             var (url, fileName, progressBar) = item;
-
             DownloadResult result = await DownloadFileAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), progressBar);
-
             if (result.Success)
             {
                 successfulDownloads++;
@@ -148,6 +146,7 @@ namespace NecroLink
                 unsuccessfulDownloads++;
                 Logger.Error($"Failed to download {fileName}. Error: {result.ErrorMessage}");
             }
+            return result;
         }
 
         public async Task<DownloadResult> DownloadFileAsync(string url, string destinationPath, ProgressBar progressBar)

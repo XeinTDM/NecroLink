@@ -71,6 +71,7 @@ namespace NecroLink
                         }
                     }
                     pool.Return(buffer);
+
                     // Trigger the ProgressChanged event one final time after the download has completed
                     ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
                     Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
