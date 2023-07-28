@@ -1,12 +1,11 @@
 ﻿using NLog;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using NecroLink;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace NecroLink
 {
@@ -20,6 +19,8 @@ namespace NecroLink
         public FileDownloader(int speedLimit)
         {
             _speedLimit = speedLimit;
+            ProgressChanged += (sender, e) => { };
+            DownloadCompleted += (sender, e) => { };
         }
 
         public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken)
@@ -31,13 +32,13 @@ namespace NecroLink
                 Logger.Info($"Starting download from {url}");
 
                 // Create a buffer pool
-                BufferPool pool = new BufferPool(8192, 100);
+                BufferPool pool = new (8192, 100);
                 byte[] buffer = pool.Rent();
 
-                using (var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false))
-                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
-                using (var streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                using (var streamToWriteTo = File.Open(destinationPath, FileMode.Create))
+                var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
+                var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                var streamToReadFrom = await response.Content.ReadAsStreamAsync();
+                var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
                 {
                     var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
                     var totalBytesRead = 0L;
@@ -125,7 +126,7 @@ namespace NecroLink
     public class DownloadResult
     {
         public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 
     public class DownloadCompletedEventArgs : EventArgs

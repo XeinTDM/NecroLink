@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Security.Policy;
 using NLog;
 using System.Linq;
+using System.Net.Http;
 
 namespace NecroLink
 {
@@ -28,7 +29,7 @@ namespace NecroLink
             InitializeComponent();
         }
 
-        private readonly List<(string url, string fileName, ProgressBar progressBar)> downloadQueue = new List<(string, string, ProgressBar)>();
+        private readonly List<(string url, string fileName, ProgressBar progressBar)> downloadQueue = new();
 
         private void BtnDownload_Click(object sender, RoutedEventArgs e)
         {
@@ -176,18 +177,42 @@ namespace NecroLink
             FileDownloader downloader = downloaderPool.Rent();
             try
             {
-                downloader.ProgressChanged += (s, e) => { progressBar.Value = e.ProgressPercentage; };
+                using var httpClient = new HttpClient();
+                using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                var totalReadBytes = 0L;
+                var buffer = new byte[8192];
+                var isMoreToRead = true;
 
-                DownloadResult result = await downloader.TryDownloadAsync(url, destinationPath, CancellationToken.None);
-                if (result.Success)
+                do
+                {
+                    var read = await response.Content.ReadAsByteArrayAsync();
+                    totalReadBytes += read.Length;
+
+                    await fileStream.WriteAsync(read);
+
+                    if (totalBytes != -1)
+                    {
+                        var progressPercentage = ((double)totalReadBytes / totalBytes) * 100;
+                        progressBar.Value = progressPercentage;
+                    }
+
+                    isMoreToRead = read.Length != 0;
+                }
+                while (isMoreToRead);
+
+                if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine("Download successful");
+                    return new DownloadResult { Success = true };
                 }
                 else
                 {
-                    Console.WriteLine($"Download failed: {result.ErrorMessage}");
+                    var errorMessage = $"Download failed: {response.StatusCode}";
+                    Console.WriteLine(errorMessage);
+                    return new DownloadResult { Success = false, ErrorMessage = errorMessage };
                 }
-                return result;
             }
             finally
             {
@@ -195,14 +220,14 @@ namespace NecroLink
             }
         }
 
-        private void ShowResultsNonBlocking(string message)
+        private static void ShowResultsNonBlocking(string message)
         {
             var resultsWindow = new ResultsWindow();
             resultsWindow.ShowMessage(message);
             resultsWindow.Show();
         }
 
-        public void CleanUpTempFiles()
+        public static void CleanUpTempFiles()
         {
             // Get the path to the Temp directory
             string tempDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp");
@@ -211,7 +236,7 @@ namespace NecroLink
             IEnumerable<string> tempFiles = Directory.EnumerateFiles(tempDirectory);
 
             // Create a ParallelOptions object that specifies the maximum degree of parallelism
-            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 }; // Adjust this number to your needs
+            ParallelOptions options = new() { MaxDegreeOfParallelism = 4 }; // Adjust this number to your needs
 
             // Use Parallel.ForEach with the ParallelOptions object
             Parallel.ForEach(tempFiles, options, tempFile =>
@@ -239,20 +264,22 @@ namespace NecroLink
 
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
-            string droppedData = e.Data.GetData(typeof(string)) as string;
-            ListBoxItem target = (ListBoxItem)sender;
+            if (e.Data.GetDataPresent(typeof(string)))
+            {
+                string? droppedData = e.Data.GetData(typeof(string)) as string;
+                ListBox target = (ListBox)sender;
 
-            int removedIdx = lstDownloadQueue.Items.IndexOf(droppedData);
-            int targetIdx = lstDownloadQueue.Items.IndexOf(target);
+                int removedIdx = lstDownloadQueue.Items.IndexOf(droppedData);
 
-            // Manage your actual data
-            var removedItem = downloadQueue[removedIdx];
-            downloadQueue.RemoveAt(removedIdx);
-            downloadQueue.Insert(targetIdx, removedItem);
+                // Manage your actual data
+                var removedItem = downloadQueue[removedIdx];
+                downloadQueue.RemoveAt(removedIdx);
+                downloadQueue.Insert(target.SelectedIndex, removedItem);
 
-            // Manage the UI
-            lstDownloadQueue.Items.RemoveAt(removedIdx);
-            lstDownloadQueue.Items.Insert(targetIdx, droppedData);
+                // Manage the UI
+                lstDownloadQueue.Items.RemoveAt(removedIdx);
+                lstDownloadQueue.Items.Insert(target.SelectedIndex, droppedData);
+            }
         }
 
         private void BtnApplyLimit_Click(object sender, RoutedEventArgs e)

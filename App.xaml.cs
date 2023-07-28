@@ -1,14 +1,17 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Windows;
 
 namespace NecroLink
 {
     public partial class App : Application
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public App()
         {
+            LogManager.Setup().LoadConfigurationFromFile("NLog.config"); // Load NLog configuration
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             Logger.Info("Application started");
         }
