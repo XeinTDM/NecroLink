@@ -18,7 +18,6 @@ namespace NecroLink
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private CancellationTokenSource cancellationTokenSource;
         private readonly FileDownloaderPool downloaderPool;
-        private readonly DownloadManager downloadManager;
         private int successfulDownloads = 0;
         private int unsuccessfulDownloads = 0;
         private int speedLimit = 0;
@@ -27,7 +26,6 @@ namespace NecroLink
         {
             cancellationTokenSource = new CancellationTokenSource();
             downloaderPool = new FileDownloaderPool(10, 1000);
-            downloadManager = new DownloadManager(10, 1000);
             InitializeComponent();
         }
 
@@ -94,9 +92,10 @@ namespace NecroLink
             string programsFolderPath = Path.Combine(desktopPath, "programs");
             Directory.CreateDirectory(programsFolderPath);
 
+
             if (downloadQueue.Count == 0) return;
 
-            const int maxConcurrentDownloads = 3;
+            const int maxConcurrentDownloads = 5;
             var downloadTasks = new List<Task<DownloadResult>>();
 
             while (downloadQueue.Count > 0 && downloadTasks.Count < maxConcurrentDownloads)
@@ -105,7 +104,7 @@ namespace NecroLink
                 downloadQueue.RemoveAt(0);
                 lstDownloadQueue.Items.RemoveAt(0);
 
-                downloadTasks.Add((Task<DownloadResult>)DownloadItemAsync(url, Path.Combine(programsFolderPath, fileName), progressBar));
+                downloadTasks.Add(DownloadItemAsync(url, Path.Combine(programsFolderPath, fileName), progressBar));
             }
 
             await Task.WhenAll(downloadTasks);
@@ -118,7 +117,7 @@ namespace NecroLink
 
         private async Task<DownloadResult> DownloadItemAsync(string url, string destinationPath, ProgressBar progressBar)
         {
-            DownloadResult result = await downloadManager.DownloadFileAsync(url, destinationPath, progressBar);
+            DownloadResult result = await DownloadFileAsync(url, destinationPath, progressBar);
             if (result.Success)
             {
                 successfulDownloads++;
@@ -128,23 +127,6 @@ namespace NecroLink
             {
                 unsuccessfulDownloads++;
                 Logger.Error($"Failed to download {Path.GetFileName(destinationPath)}. Error: {result.ErrorMessage}");
-            }
-            return result;
-        }
-
-        private async Task<DownloadResult> DownloadItemAsync((string url, string fileName, ProgressBar progressBar) item)
-        {
-            var (url, fileName, progressBar) = item;
-            DownloadResult result = await DownloadFileAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), progressBar);
-            if (result.Success)
-            {
-                successfulDownloads++;
-                Logger.Info($"Successfully downloaded {fileName}");
-            }
-            else
-            {
-                unsuccessfulDownloads++;
-                Logger.Error($"Failed to download {fileName}. Error: {result.ErrorMessage}");
             }
             return result;
         }
@@ -172,7 +154,7 @@ namespace NecroLink
                     if (totalBytes != -1)
                     {
                         var progressPercentage = ((double)totalReadBytes / totalBytes) * 100;
-                        progressBar.Value = progressPercentage;
+                        progressBar.Dispatcher.Invoke(() => progressBar.Value = progressPercentage);
                     }
 
                     isMoreToRead = read.Length != 0;

@@ -23,72 +23,99 @@ namespace NecroLink
             DownloadCompleted += (sender, e) => { };
         }
 
-        public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken, IProgress<int> progress)
+public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken, IProgress<int> progress)
+{
+    var result = new DownloadResult();
+    int retryCount = 0;
+
+    while (retryCount < 3) // Maximum of 3 retries
+    {
+        try
         {
-            var result = new DownloadResult();
+            Logger.Info($"Starting download from {url}");
 
-            try
+            BufferPool pool = new (8192, 100);
+            byte[] buffer = pool.Rent();
+
+            var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+            var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
+
+            var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
+            var totalBytesRead = 0L;
+            var bytesRead = 0;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
             {
-                Logger.Info($"Starting download from {url}");
+                await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+                totalBytesRead += bytesRead;
 
-                // Create a buffer pool
-                BufferPool pool = new (8192, 100);
-                byte[] buffer = pool.Rent();
-
-                var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
-                var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken);
-                var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
+                if (stopwatch.ElapsedMilliseconds > 1000)
                 {
-                    var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
-                    var totalBytesRead = 0L;
-                    var bytesRead = 0;
-                    var stopwatch = new Stopwatch();
+                    var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
+                    Logger.Info($"Download speed: {speed} bytes/second");
 
-                    stopwatch.Start();
-
-                    while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
-                    {
-                        await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-                        totalBytesRead += bytesRead;
-                        if (stopwatch.ElapsedMilliseconds > 1000)
-                        {
-                            var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
-                            Logger.Info($"Download speed: {speed} bytes/second");
-                            pool.Return(buffer);
-                            buffer = pool.Rent();
-
-                            // Report the progress
-                            progress?.Report((int)((double)totalBytesRead / totalBytes * 100));
-
-                            stopwatch.Restart();
-                            if (_speedLimit > 0)
-                            {
-                                var delay = (int)(totalBytesRead / (_speedLimit / 1000.0));
-                                await Task.Delay(delay, cancellationToken);
-                            }
-                            stopwatch.Restart();
-                        }
-                    }
                     pool.Return(buffer);
+                    buffer = pool.Rent();
 
-                    // Trigger the ProgressChanged event one final time after the download has completed
-                    ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
-                    Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
-                    result.Success = true;
+                    progress?.Report((int)((double)totalBytesRead / totalBytes * 100));
+
+                    stopwatch.Restart();
+
+                    if (_speedLimit > 0)
+                    {
+                        var delay = (int)(totalBytesRead / (_speedLimit / 1000.0));
+                        await Task.Delay(delay, cancellationToken);
+                    }
+
+                    stopwatch.Restart();
                 }
-
             }
-            catch (Exception ex)
+
+            pool.Return(buffer);
+
+            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
+
+            Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
+
+            result.Success = true;
+
+            // If the download is successful, break the loop
+            if (result.Success)
             {
-                result.Success = false;
-                result.ErrorMessage = ex.Message;
-                Logger.Error(ex, $"Download from {url} failed");
+                break;
             }
-
-            DownloadCompleted?.Invoke(this, new DownloadCompletedEventArgs(result));
-            return result;
         }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.ErrorMessage = ex.Message;
+            Logger.Error(ex, $"Download from {url} failed. Attempt: {retryCount + 1}");
+        }
+
+        // If the download failed, increment the retry count and try again
+        if (!result.Success)
+        {
+            retryCount++;
+            await Task.Delay(2000); // Wait for 2 seconds before retrying
+        }
+    }
+
+    // If after 3 attempts the download is still unsuccessful, you might want to skip to the next download
+    if (!result.Success && retryCount >= 3)
+    {
+        Logger.Error($"Download from {url} failed after 3 attempts. Skipping to next download.");
+    }
+
+    DownloadCompleted?.Invoke(this, new DownloadCompletedEventArgs(result));
+    return result;
+}
+
     }
 
     public class FileDownloaderPool
