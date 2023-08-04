@@ -98,8 +98,8 @@ namespace NecroLink
             var downloadTasks = new List<Task<DownloadResult>>();
 
             while (downloadQueue.Count > 0 && downloadTasks.Count < maxConcurrentDownloads)
-            {
-                var (url, fileName, progressBar) = downloadQueue[0];
+                {
+                    var (url, fileName, progressBar) = downloadQueue[0];
                 downloadQueue.RemoveAt(0);
                 lstDownloadQueue.Items.RemoveAt(0);
 

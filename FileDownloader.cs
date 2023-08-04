@@ -47,7 +47,6 @@ namespace NecroLink
                     stopwatch.Start();
                     while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
                     {
-                        // Check if the file size exceeds the maximum limit
                         if (totalBytesRead > maxFileSizeInBytes)
                         {
                             throw new Exception("File size exceeds the maximum limit.");
