@@ -105,11 +105,9 @@ namespace NecroLink
         public class FileDownloaderPool
         {
             private readonly Stack<FileDownloader> pool;
-
             public FileDownloaderPool(int poolSize, int speedLimit)
             {
                 this.pool = new Stack<FileDownloader>(poolSize);
-
                 for (int i = 0; i < poolSize; i++)
                 {
                     pool.Push(new FileDownloader(speedLimit));
@@ -124,8 +122,6 @@ namespace NecroLink
                 }
                 else
                 {
-                    // If the pool is empty, create a new FileDownloader
-                    // You could also throw an exception or block until a FileDownloader is returned to the pool
                     return new FileDownloader(0);
                 }
             }
