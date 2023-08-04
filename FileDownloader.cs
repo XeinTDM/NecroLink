@@ -1,13 +1,13 @@
 ﻿using NLog;
 using System;
-using NecroLink;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Net;
+using NecroLink;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Collections.Generic;
+using NecroLink;
 
 namespace NecroLink
 {
@@ -21,45 +21,45 @@ namespace NecroLink
         public FileDownloader(int speedLimit)
         {
             _speedLimit = speedLimit;
-            ProgressChanged += (sender, e) => { };
-            DownloadCompleted += (sender, e) => { };
         }
 
-        public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken, IProgress<int> progress, long maxFileSizeInBytes = 5000000000)
+        public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken)
         {
             var result = new DownloadResult();
-            int retryCount = 0;
-            while (retryCount < 3)
+
+            try
             {
-                try
+                Logger.Info($"Starting download from {url}");
+
+                // Create a buffer pool
+                BufferPool pool = new BufferPool(8192, 100);
+                byte[] buffer = pool.Rent();
+
+                using (var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false))
+                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+                using (var streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                using (var streamToWriteTo = File.Open(destinationPath, FileMode.Create))
                 {
-                    Logger.Info($"Starting download from {url}");
-                    BufferPool pool = new BufferPool(8192, 100);
-                    byte[] buffer = pool.Rent();
-                    var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
-                    var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                    var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken);
-                    var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
                     var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
                     var totalBytesRead = 0L;
                     var bytesRead = 0;
                     var stopwatch = new Stopwatch();
+
                     stopwatch.Start();
+
                     while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
                     {
-                        totalBytesRead += bytesRead;
-                        if (totalBytesRead > maxFileSizeInBytes)
-                        {
-                            throw new Exception("File size exceeds the maximum limit.");
-                        }
                         await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+                        totalBytesRead += bytesRead;
                         if (stopwatch.ElapsedMilliseconds > 1000)
                         {
                             var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
                             Logger.Info($"Download speed: {speed} bytes/second");
+
+                            // Return the old buffer to the pool and rent a new one
                             pool.Return(buffer);
                             buffer = pool.Rent();
-                            progress?.Report((int)((double)totalBytesRead / totalBytes * 100));
+                            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs((int)((double)totalBytesRead / totalBytes * 100), null));
                             stopwatch.Restart();
                             if (_speedLimit > 0)
                             {
@@ -70,92 +70,84 @@ namespace NecroLink
                         }
                     }
                     pool.Return(buffer);
+                    // Trigger the ProgressChanged event one final time after the download has completed
                     ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
                     Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
                     result.Success = true;
-                    if (result.Success)
-                    {
-                        break;
-                    }
                 }
-                catch (Exception ex)
-                {
-                    result.Success = false;
-                    result.ErrorMessage = ex.Message;
-                    Logger.Error(ex, $"Download from {url} failed. Attempt: {retryCount + 1}");
-                    if (ex.Message == "File size exceeds the maximum limit.")
-                    {
-                        break;
-                    }
-                }
-                if (!result.Success)
-                {
-                    retryCount++;
-                    await Task.Delay(2000);
-                }
+
             }
-            if (!result.Success && retryCount >= 3)
+            catch (Exception ex)
             {
-                Logger.Error($"Download from {url} failed after 3 attempts. Skipping to next download.");
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                Logger.Error(ex, $"Download from {url} failed");
             }
+
             DownloadCompleted?.Invoke(this, new DownloadCompletedEventArgs(result));
             return result;
         }
+    }
 
-        public class FileDownloaderPool
+    public class FileDownloaderPool
+    {
+        private readonly Stack<FileDownloader> pool;
+
+        public FileDownloaderPool(int poolSize, int speedLimit)
         {
-            private readonly Stack<FileDownloader> pool;
-            public FileDownloaderPool(int poolSize, int speedLimit)
+            this.pool = new Stack<FileDownloader>(poolSize);
+
+            for (int i = 0; i < poolSize; i++)
             {
-                this.pool = new Stack<FileDownloader>(poolSize);
-                for (int i = 0; i < poolSize; i++)
-                {
-                    pool.Push(new FileDownloader(speedLimit));
-                }
-            }
-            public FileDownloader Rent()
-            {
-                if (pool.Count > 0)
-                {
-                    return pool.Pop();
-                }
-                else
-                {
-                    return new FileDownloader(0);
-                }
-            }
-            public void Return(FileDownloader fileDownloader)
-            {
-                pool.Push(fileDownloader);
+                pool.Push(new FileDownloader(speedLimit));
             }
         }
 
-        public class DownloadResult
+        public FileDownloader Rent()
         {
-            public bool Success { get; set; }
-            public string? ErrorMessage { get; set; }
-        }
-
-        public class DownloadCompletedEventArgs : EventArgs
-        {
-            public DownloadResult Result { get; }
-
-            public DownloadCompletedEventArgs(DownloadResult result)
+            if (pool.Count > 0)
             {
-                Result = result;
+                return pool.Pop();
+            }
+            else
+            {
+                // If the pool is empty, create a new FileDownloader
+                // You could also throw an exception or block until a FileDownloader is returned to the pool
+                return new FileDownloader(0);
             }
         }
 
-        public class ProgressChangedEventArgs : EventArgs
+        public void Return(FileDownloader fileDownloader)
         {
-            public int ProgressPercentage { get; set; }
-            public object UserState { get; set; }
+            pool.Push(fileDownloader);
+        }
+    }
 
-            public ProgressChangedEventArgs(int progressPercentage, object userState)
-            {
-                ProgressPercentage = progressPercentage;
-                UserState = userState;
-            }
+    public class DownloadResult
+    {
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class DownloadCompletedEventArgs : EventArgs
+    {
+        public DownloadResult Result { get; }
+
+        public DownloadCompletedEventArgs(DownloadResult result)
+        {
+            Result = result;
+        }
+    }
+
+    public class ProgressChangedEventArgs : EventArgs
+    {
+        public int ProgressPercentage { get; set; }
+        public object UserState { get; set; }
+
+        public ProgressChangedEventArgs(int progressPercentage, object userState)
+        {
+            ProgressPercentage = progressPercentage;
+            UserState = userState;
         }
     }
 }

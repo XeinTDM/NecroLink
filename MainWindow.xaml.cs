@@ -1,14 +1,15 @@
-﻿using NLog;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Net.Http;
+using System.Windows;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using System.Windows.Input;
-using static NecroLink.FileDownloader;
+using System.Security.Policy;
+using NLog;
+using System.Linq;
+using NecroLink;
 
 namespace NecroLink
 {
@@ -28,7 +29,7 @@ namespace NecroLink
             InitializeComponent();
         }
 
-        private readonly List<(string url, string fileName, ProgressBar progressBar)> downloadQueue = new();
+        private readonly List<(string url, string fileName, ProgressBar progressBar)> downloadQueue = new List<(string, string, ProgressBar)>();
 
         private void BtnDownload_Click(object sender, RoutedEventArgs e)
         {
@@ -87,47 +88,88 @@ namespace NecroLink
 
         private async void StartNextDownload()
         {
+            // Get the path to the desktop folder
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string programsFolderPath = Path.Combine(desktopPath, "programs");
-            Directory.CreateDirectory(programsFolderPath);
 
+            // Combine with the "programs" folder name
+            string programsFolderPath = Path.Combine(desktopPath, "programs");
+
+            // Create the folder if it doesn't exist
+            Directory.CreateDirectory(programsFolderPath);
 
             if (downloadQueue.Count == 0) return;
 
-            const int maxConcurrentDownloads = 5;
-            var downloadTasks = new List<Task<DownloadResult>>();
+            // Specify maximum number of concurrent downloads
+            const int maxConcurrentDownloads = 3;
 
-            while (downloadQueue.Count > 0 && downloadTasks.Count < maxConcurrentDownloads)
-                {
-                    var (url, fileName, progressBar) = downloadQueue[0];
-                downloadQueue.RemoveAt(0);
-                lstDownloadQueue.Items.RemoveAt(0);
-
-                downloadTasks.Add(DownloadItemAsync(url, Path.Combine(programsFolderPath, fileName), progressBar));
-            }
-
+            // Prepare a list of tasks
+            var downloadTasks = downloadQueue.Select(item => DownloadItemAsync(item)).ToList();
             await Task.WhenAll(downloadTasks);
 
-            if (downloadTasks.Count == 0)
+            while (downloadQueue.Count > 0 && downloadTasks.Count < maxConcurrentDownloads)
             {
-                ShowResultsNonBlocking($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
+                var (url, fileName, progressBar) = downloadQueue[0];
+                downloadQueue.RemoveAt(0);
+                lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
+
+                var downloader = new FileDownloader(speedLimit);
+                downloader.ProgressChanged += (s, e) =>
+                {
+                    progressBar.Value = e.ProgressPercentage;
+                };
+
+                // Add this code at the end of the StartNextDownload method, after the while loop
+                if (downloadQueue.Count == 0 && downloadTasks.Count == 0)
+                {
+                    MessageBox.Show($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
+                }
+
+                downloadTasks.Add(downloader.TryDownloadAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), cancellationTokenSource.Token));
+            }
+
+            // When any task completes, remove it from the list and start a new download if any remain
+            while (downloadTasks.Count > 0)
+            {
+                var completedTask = await Task.WhenAny(downloadTasks);
+                downloadTasks.Remove(completedTask);
+
+                if (downloadQueue.Count > 0)
+                {
+                    var (url, fileName, progressBar) = downloadQueue[0];
+                    downloadQueue.RemoveAt(0);
+                    lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
+
+                    var downloader = new FileDownloader(speedLimit);
+                    downloader.ProgressChanged += (s, e) =>
+                    {
+                        progressBar.Value = e.ProgressPercentage;
+                    };
+
+                    downloadTasks.Add(downloader.TryDownloadAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), cancellationTokenSource.Token));
+                }
+                if (downloadTasks.Count == 0)
+                {
+                    ShowResultsNonBlocking($"Downloads completed. Successful: {successfulDownloads}, Unsuccessful: {unsuccessfulDownloads}");
+                }
             }
         }
 
-        private async Task<DownloadResult> DownloadItemAsync(string url, string destinationPath, ProgressBar progressBar)
+        private async Task DownloadItemAsync((string url, string fileName, ProgressBar progressBar) item)
         {
-            DownloadResult result = await DownloadFileAsync(url, destinationPath, progressBar);
+            var (url, fileName, progressBar) = item;
+
+            DownloadResult result = await DownloadFileAsync(url, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Programs", fileName), progressBar);
+
             if (result.Success)
             {
                 successfulDownloads++;
-                Logger.Info($"Successfully downloaded {Path.GetFileName(destinationPath)}");
+                Logger.Info($"Successfully downloaded {fileName}");
             }
             else
             {
                 unsuccessfulDownloads++;
-                Logger.Error($"Failed to download {Path.GetFileName(destinationPath)}. Error: {result.ErrorMessage}");
+                Logger.Error($"Failed to download {fileName}. Error: {result.ErrorMessage}");
             }
-            return result;
         }
 
         public async Task<DownloadResult> DownloadFileAsync(string url, string destinationPath, ProgressBar progressBar)
@@ -135,42 +177,18 @@ namespace NecroLink
             FileDownloader downloader = downloaderPool.Rent();
             try
             {
-                using var httpClient = new HttpClient();
-                using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-                var totalReadBytes = 0L;
-                var buffer = new byte[8192];
-                var isMoreToRead = true;
+                downloader.ProgressChanged += (s, e) => { progressBar.Value = e.ProgressPercentage; };
 
-                do
-                {
-                    var read = await response.Content.ReadAsByteArrayAsync();
-                    totalReadBytes += read.Length;
-
-                    await fileStream.WriteAsync(read);
-
-                    if (totalBytes != -1)
-                    {
-                        var progressPercentage = ((double)totalReadBytes / totalBytes) * 100;
-                        progressBar.Dispatcher.Invoke(() => progressBar.Value = progressPercentage);
-                    }
-
-                    isMoreToRead = read.Length != 0;
-                }
-                while (isMoreToRead);
-
-                if (response.IsSuccessStatusCode)
+                DownloadResult result = await downloader.TryDownloadAsync(url, destinationPath, CancellationToken.None);
+                if (result.Success)
                 {
                     Console.WriteLine("Download successful");
-                    return new DownloadResult { Success = true };
                 }
                 else
                 {
-                    var errorMessage = $"Download failed: {response.StatusCode}";
-                    Console.WriteLine(errorMessage);
-                    return new DownloadResult { Success = false, ErrorMessage = errorMessage };
+                    Console.WriteLine($"Download failed: {result.ErrorMessage}");
                 }
+                return result;
             }
             finally
             {
@@ -178,14 +196,14 @@ namespace NecroLink
             }
         }
 
-        private static void ShowResultsNonBlocking(string message)
+        private void ShowResultsNonBlocking(string message)
         {
             var resultsWindow = new ResultsWindow();
             resultsWindow.ShowMessage(message);
             resultsWindow.Show();
         }
 
-        public static void CleanUpTempFiles()
+        public void CleanUpTempFiles()
         {
             // Get the path to the Temp directory
             string tempDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Temp");
@@ -194,7 +212,7 @@ namespace NecroLink
             IEnumerable<string> tempFiles = Directory.EnumerateFiles(tempDirectory);
 
             // Create a ParallelOptions object that specifies the maximum degree of parallelism
-            ParallelOptions options = new() { MaxDegreeOfParallelism = 4 }; // Adjust this number to your needs
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 }; // Adjust this number to your needs
 
             // Use Parallel.ForEach with the ParallelOptions object
             Parallel.ForEach(tempFiles, options, tempFile =>
@@ -222,22 +240,20 @@ namespace NecroLink
 
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(typeof(string)))
-            {
-                string? droppedData = e.Data.GetData(typeof(string)) as string;
-                ListBox target = (ListBox)sender;
+            string droppedData = e.Data.GetData(typeof(string)) as string;
+            ListBoxItem target = (ListBoxItem)sender;
 
-                int removedIdx = lstDownloadQueue.Items.IndexOf(droppedData);
+            int removedIdx = lstDownloadQueue.Items.IndexOf(droppedData);
+            int targetIdx = lstDownloadQueue.Items.IndexOf(target);
 
-                // Manage your actual data
-                var removedItem = downloadQueue[removedIdx];
-                downloadQueue.RemoveAt(removedIdx);
-                downloadQueue.Insert(target.SelectedIndex, removedItem);
+            // Manage your actual data
+            var removedItem = downloadQueue[removedIdx];
+            downloadQueue.RemoveAt(removedIdx);
+            downloadQueue.Insert(targetIdx, removedItem);
 
-                // Manage the UI
-                lstDownloadQueue.Items.RemoveAt(removedIdx);
-                lstDownloadQueue.Items.Insert(target.SelectedIndex, droppedData);
-            }
+            // Manage the UI
+            lstDownloadQueue.Items.RemoveAt(removedIdx);
+            lstDownloadQueue.Items.Insert(targetIdx, droppedData);
         }
 
         private void BtnApplyLimit_Click(object sender, RoutedEventArgs e)
