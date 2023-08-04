@@ -1,15 +1,14 @@
-﻿using System;
+﻿using NLog;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Windows;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
-using System.Collections.Generic;
 using System.Windows.Input;
-using System.Security.Policy;
-using NLog;
-using System.Linq;
-using System.Net.Http;
+using static NecroLink.FileDownloader;
 
 namespace NecroLink
 {

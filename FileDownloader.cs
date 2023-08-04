@@ -113,7 +113,6 @@ namespace NecroLink
                     pool.Push(new FileDownloader(speedLimit));
                 }
             }
-
             public FileDownloader Rent()
             {
                 if (pool.Count > 0)
@@ -125,7 +124,6 @@ namespace NecroLink
                     return new FileDownloader(0);
                 }
             }
-
             public void Return(FileDownloader fileDownloader)
             {
                 pool.Push(fileDownloader);
