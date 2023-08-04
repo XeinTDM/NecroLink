@@ -47,13 +47,12 @@ namespace NecroLink
                     stopwatch.Start();
                     while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
                     {
+                        totalBytesRead += bytesRead;
                         if (totalBytesRead > maxFileSizeInBytes)
                         {
                             throw new Exception("File size exceeds the maximum limit.");
                         }
-
                         await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-                        totalBytesRead += bytesRead;
                         if (stopwatch.ElapsedMilliseconds > 1000)
                         {
                             var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
@@ -84,6 +83,10 @@ namespace NecroLink
                     result.Success = false;
                     result.ErrorMessage = ex.Message;
                     Logger.Error(ex, $"Download from {url} failed. Attempt: {retryCount + 1}");
+                    if (ex.Message == "File size exceeds the maximum limit.")
+                    {
+                        break;
+                    }
                 }
                 if (!result.Success)
                 {
@@ -97,8 +100,6 @@ namespace NecroLink
             }
             DownloadCompleted?.Invoke(this, new DownloadCompletedEventArgs(result));
             return result;
-
-
         }
 
         public class FileDownloaderPool
