@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Collections.Generic;
-using NecroLink;
 
 namespace NecroLink
 {
@@ -32,49 +31,47 @@ namespace NecroLink
                 Logger.Info($"Starting download from {url}");
 
                 // Create a buffer pool
-                BufferPool pool = new BufferPool(8192, 100);
+                BufferPool pool = new(8192, 100);
                 byte[] buffer = pool.Rent();
 
-                using (var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false))
-                using (var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
-                using (var streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                using (var streamToWriteTo = File.Open(destinationPath, FileMode.Create))
+                using var client = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate }, false);
+                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken);
+                using var streamToWriteTo = File.Open(destinationPath, FileMode.Create);
+                var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
+                var totalBytesRead = 0L;
+                var bytesRead = 0;
+                var stopwatch = new Stopwatch();
+
+                stopwatch.Start();
+
+                while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, cancellationToken)) != 0)
                 {
-                    var totalBytes = response.Content.Headers.ContentLength.GetValueOrDefault();
-                    var totalBytesRead = 0L;
-                    var bytesRead = 0;
-                    var stopwatch = new Stopwatch();
-
-                    stopwatch.Start();
-
-                    while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) != 0)
+                    await streamToWriteTo.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                    totalBytesRead += bytesRead;
+                    if (stopwatch.ElapsedMilliseconds > 1000)
                     {
-                        await streamToWriteTo.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-                        totalBytesRead += bytesRead;
-                        if (stopwatch.ElapsedMilliseconds > 1000)
-                        {
-                            var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
-                            Logger.Info($"Download speed: {speed} bytes/second");
+                        var speed = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
+                        Logger.Info($"Download speed: {speed} bytes/second");
 
-                            // Return the old buffer to the pool and rent a new one
-                            pool.Return(buffer);
-                            buffer = pool.Rent();
-                            ProgressChanged?.Invoke(this, new ProgressChangedEventArgs((int)((double)totalBytesRead / totalBytes * 100), null));
-                            stopwatch.Restart();
-                            if (_speedLimit > 0)
-                            {
-                                var delay = (int)(totalBytesRead / (_speedLimit / 1000.0));
-                                await Task.Delay(delay, cancellationToken);
-                            }
-                            stopwatch.Restart();
+                        // Return the old buffer to the pool and rent a new one
+                        pool.Return(buffer);
+                        buffer = pool.Rent();
+                        ProgressChanged?.Invoke(this, new ProgressChangedEventArgs((int)((double)totalBytesRead / totalBytes * 100), null));
+                        stopwatch.Restart();
+                        if (_speedLimit > 0)
+                        {
+                            var delay = (int)(totalBytesRead / (_speedLimit / 1000.0));
+                            await Task.Delay(delay, cancellationToken);
                         }
+                        stopwatch.Restart();
                     }
-                    pool.Return(buffer);
-                    // Trigger the ProgressChanged event one final time after the download has completed
-                    ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
-                    Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
-                    result.Success = true;
                 }
+                pool.Return(buffer);
+                // Trigger the ProgressChanged event one final time after the download has completed
+                ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(100, null));
+                Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
+                result.Success = true;
 
             }
             catch (Exception ex)
