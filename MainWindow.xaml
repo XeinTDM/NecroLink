@@ -10,365 +10,234 @@
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None">
+    
     <Window.Resources>
-        <Style TargetType="ProgressBar">
-            <Setter Property="Foreground" Value="White" />
-            <!--  Change the ProgressBar's color to white  -->
-            <Setter Property="Background" Value="#0d1e3b" />
-            <Setter Property="HorizontalAlignment" Value="Right" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="Maximum" Value="100" />
-            <Setter Property="Minimum" Value="0" />
-            <Setter Property="Width" Value="40" />
-            <!--  Change the ProgressBar's background color to dark blue  -->
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ProgressBar">
-                        <Grid>
-                            <!--  Visual representation of the ProgressBar  -->
-                            <Rectangle
-                                Margin="0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                RadiusX="5"
-                                RadiusY="5">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush Color="{TemplateBinding Background}" />
-                                    <!--  Use the Background property as the fill color  -->
-                                </Rectangle.Fill>
-                            </Rectangle>
-                            <Rectangle
-                                Margin="0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                RadiusX="5"
-                                RadiusY="5">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush Color="{TemplateBinding Foreground}" />
-                                    <!--  Use the Foreground property as the progress color  -->
-                                </Rectangle.Fill>
-                                <Rectangle.Width>
-                                    <Binding Path="Value" RelativeSource="{RelativeSource TemplatedParent}" />
-                                </Rectangle.Width>
-                            </Rectangle>
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, Mode=OneWay, StringFormat={}{0}%}" />
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Border">
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="#11274d" />
-            <Setter Property="CornerRadius" Value="10" />
-        </Style>
-
-        <Style x:Key="RectangleStyle" TargetType="Rectangle">
-            <Setter Property="Width" Value="150" />
-            <Setter Property="Height" Value="160" />
-            <Setter Property="Fill" Value="#0a162b" />
-            <Setter Property="RadiusX" Value="5" />
-            <Setter Property="RadiusY" Value="5" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-        </Style>
-
-        <Style x:Key="LabelStyle" TargetType="Label">
-            <Setter Property="Foreground" Value="white" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontFamily" Value="Arial" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-        </Style>
-
-        <Style x:Key="Chk" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="white" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-        </Style>
-
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="CommonStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
 
-    <Border Background="#0d1e3b">
-        <Grid>
-            <!--  Browsers  -->
-            <Rectangle Margin="25,47,0,240" Style="{StaticResource RectangleStyle}" />
-            <Label
-                Margin="69,23,0,0"
-                Content="Browsers"
-                Style="{StaticResource LabelStyle}" />
+    <Grid>
+        <!-- Define rows -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <!--  Programming  -->
-            <Rectangle Margin="25,195,0,0" Style="{StaticResource RectangleStyle}" />
-            <Label
-                Margin="56,217,0,0"
-                Content="Programming"
-                Style="{StaticResource LabelStyle}" />
+        <!-- Define columns -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="150"/>
+        </Grid.ColumnDefinitions>
 
-            <!--  Communication  -->
-            <Rectangle Margin="200,47,0,240" Style="{StaticResource RectangleStyle}" />
-            <Label
-                Margin="225,21,0,0"
-                Content="Communication"
-                Style="{StaticResource LabelStyle}" />
-
-            <!--  Hector hehe  -->
-            <Rectangle Margin="200,243,0,45" Style="{StaticResource RectangleStyle}" />
-            <Label
-                Margin="250,220,0,0"
-                Content="Hector"
-                Style="{StaticResource LabelStyle}" />
-
-            <!--  Other  -->
-            <Rectangle
-                Width="160"
-                Height="298"
-                Margin="389,0,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Fill="#0a162b"
-                RadiusX="5"
-                RadiusY="5" />
-            <Label
-                Width="44"
-                Margin="441,51,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Other"
-                FontFamily="Arial"
-                FontWeight="Bold"
-                Foreground="white" />
-
-            <!--  !! Program Checkboxes !!  -->
-
-            <!--  Browsers  -->
-            <CheckBox
+        <!-- Box 1: Browsers -->
+        <GroupBox Grid.Row="0" Grid.Column="0" Header="Browsers">
+            <Grid>
+                <CheckBox
                 x:Name="ChkBrave"
-                Margin="33,56,0,0"
+                Margin="0,20,0,0"
                 Checked="ChkBrave_Checked"
                 Content="Brave"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkOperaGX"
-                Margin="33,76,0,0"
+                Margin="0,40,0,0"
                 Checked="ChkOperaGX_Checked"
                 Content="OperaGX"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkChrome"
-                Margin="33,96,0,0"
+                Margin="0,60,0,0"
                 Checked="ChkChrome_Checked"
                 Content="Chrome"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkFireFox"
-                Margin="33,116,0,0"
+                Margin="0,80,0,0"
                 Checked="ChkFireFox_Checked"
                 Content="FireFox"
                 Style="{StaticResource Chk}" />
+                <ProgressBar x:Name="progBrave" Margin="135,20,0,0" HorizontalAlignment="Left" />
+                <ProgressBar x:Name="progOperaGX" Margin="135,40,0,0" HorizontalAlignment="Left" />
+                <ProgressBar x:Name="progChrome" Margin="135,60,0,0" HorizontalAlignment="Left" />
+                <ProgressBar x:Name="progFireFox" Margin="135,80,0,0" HorizontalAlignment="Left" />
+            </Grid>
+        </GroupBox>
 
-            <!--  Programming  -->
-            <CheckBox
+        <!-- Box 2: Programming -->
+        <GroupBox Grid.Row="0" Grid.Column="1" Header="Programming">
+            <Grid>
+                <CheckBox
                 x:Name="ChkPython"
-                Margin="33,249,0,0"
+                Margin="0,20,0,0"
                 Checked="ChkPython_Checked"
                 Content="Python"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkVSCode"
-                Margin="33,362,0,0"
+                Margin="0,40,0,0"
                 Checked="ChkVSCode_Checked"
                 Content="VS Code"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkVSPro"
-                Margin="33,382,0,0"
+                Margin="0,60,0,0"
                 Checked="ChkVCPro_Checked"
                 Content="VS Pro 2022"
                 Style="{StaticResource Chk}" />
+                <ProgressBar x:Name="progPython" Margin="135,20,0,0" HorizontalAlignment="Left" />
+                <ProgressBar x:Name="progVSCode" Margin="135,40,0,0" HorizontalAlignment="Left"/>
+                <ProgressBar x:Name="progVSPro" Margin="135,60,0,0" HorizontalAlignment="Left" />
+            </Grid>
+        </GroupBox>
 
-            <!--  Communication  -->
-            <CheckBox
+        <!-- Box 3: Communication -->
+        <GroupBox Grid.Row="0" Grid.Column="2" Header="Communication">
+            <Grid>
+                <CheckBox
                 x:Name="ChkDiscord"
-                Margin="210,55,0,0"
+                Margin="0,55,0,0"
                 Checked="ChkDiscord_Checked"
                 Content="Discord"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkSession"
-                Margin="210,75,0,0"
+                Margin="0,75,0,0"
                 Checked="ChkSession_Checked"
                 Content="Session"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkTelegram"
-                Margin="210,95,0,0"
+                Margin="0,95,0,0"
                 Checked="ChkTelegram_Checked"
                 Content="Telegram"
                 Style="{StaticResource Chk}" />
+                <ProgressBar x:Name="progDiscord" Margin="0,54,0,0" HorizontalAlignment="Center"/>
+                <ProgressBar x:Name="progSession" Margin="0,74,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progTelegram" Margin="0,95,0,0" HorizontalAlignment="Center" />
+            </Grid>
+        </GroupBox>
 
-            <!--  Hector  -->
-            <CheckBox
+        <!-- Box 4: Hector -->
+        <GroupBox Grid.Row="1" Grid.Column="0" Header="Hector">
+            <Grid>
+                <CheckBox
                 x:Name="ChkGit"
-                Margin="210,250,0,0"
+                Margin="0,20,0,0"
                 Checked="ChkGit_Checked"
                 Content="Git"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkRH"
-                Margin="210,290,0,0"
+                Margin="0,40,0,0"
                 Checked="ChkRH_Checked"
                 Content="ResHacker"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkOpenVPN"
-                Margin="210,270,0,0"
+                Margin="0,60,0,0"
                 Checked="ChkOpenVPN_Checked"
                 Content="OpenVPN"
                 Style="{StaticResource Chk}" />
+                <ProgressBar x:Name="progGit" Margin="0,20,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progRH" Margin="0,40,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progOpenVPN" Margin="0,60,0,0" HorizontalAlignment="Center" />
 
-            <!--  Other  -->
-            <CheckBox
+                <!--  (De)Select  -->
+                <Button
+                x:Name="BtnSelectAll"
+                Width="65"
+                Margin="5,0,0,5"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Click="BtnSelectAll_Click"
+                Content="Select All" />
+                <Button
+                x:Name="BtnDeselectAll"
+                Width="75"
+                Margin="75,0,0,5"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Click="BtnDeselectAll_Click"
+                Content="Deselect All" />
+            </Grid>
+        </GroupBox>
+
+        <!-- Box 5: Other -->
+        <GroupBox Grid.Row="1" Grid.Column="1" Header="Other">
+            <Grid>
+                <CheckBox
                 x:Name="ChkSpotify"
-                Margin="400,80,0,0"
+                Margin="0,20,0,0"
                 Checked="ChkSpotify_Checked"
                 Content="Spotify"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkSteam"
-                Margin="400,100,0,0"
+                Margin="0,40,0,0"
                 Checked="ChkSteam_Checked"
                 Content="Steam"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkWinRAR"
-                Margin="400,120,0,0"
+                Margin="0,60,0,0"
                 Checked="ChkWinRAR_Checked"
                 Content="WinRAR"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkVMware"
-                Margin="400,140,0,0"
+                Margin="0,80,0,0"
                 Checked="ChkVMware_Checked"
                 Content="VMware"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkProtonVPN"
-                Margin="400,160,0,0"
+                Margin="0,100,0,0"
                 Checked="ChkCC_Checked"
                 Content="ProtonVPN"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkCC"
-                Margin="400,180,0,0"
+                Margin="0,120,0,0"
                 Checked="ChkCC_Checked"
                 Content="Creative Cloud"
                 Style="{StaticResource Chk}" />
-            <CheckBox
+                <CheckBox
                 x:Name="ChkFigma"
-                Margin="400,200,0,0"
+                Margin="0,140,0,0"
                 Checked="ChkFigma_Checked"
                 Content="Figma"
                 Style="{StaticResource Chk}" />
+                <ProgressBar x:Name="progSpotify" Margin="25,20,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progSteam" Margin="25,40,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progWinRAR" Margin="25,60,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progVMware" Margin="25,80,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progProtonVPN" Margin="25,100,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progCC" Margin="25,120,0,0" HorizontalAlignment="Center" />
+                <ProgressBar x:Name="progFigma" Margin="25,140,0,0" HorizontalAlignment="Center" />
+            </Grid>
+        </GroupBox>
 
-            <!--  !! Progress Percent !!  -->
+        <!-- Box 6: (Empty for now) -->
+        <GroupBox Grid.Row="1" Grid.Column="2" Header="(Empty)">
+            <Grid>
 
-            <!--  Browsers  -->
-            <ProgressBar x:Name="progBrave" Margin="0,55,623,0" />
-            <ProgressBar x:Name="progOperaGX" Margin="0,75,623,0" />
-            <ProgressBar x:Name="progChrome" Margin="0,95,623,0" />
-            <ProgressBar x:Name="progFireFox" Margin="0,115,623,0" />
+            </Grid>
+        </GroupBox>
 
-            <!--  Programming  -->
-            <ProgressBar x:Name="progPython" Margin="0,249,623,0" />
-            <ProgressBar x:Name="progVSCode" Margin="0,361,623,0" />
-            <ProgressBar x:Name="progVSPro" Margin="0,381,623,0" />
-
-            <!--  Communication  -->
-            <ProgressBar x:Name="progDiscord" Margin="0,54,448,0" />
-            <ProgressBar x:Name="progSession" Margin="0,74,448,0" />
-            <ProgressBar x:Name="progTelegram" Margin="0,95,448,0" />
-
-            <!--  Hector  -->
-            <ProgressBar x:Name="progGit" Margin="0,249,448,0" />
-            <ProgressBar x:Name="progRH" Margin="0,289,448,0" />
-            <ProgressBar x:Name="progOpenVPN" Margin="0,269,448,0" />
-
-            <!--  Other  -->
-            <ProgressBar x:Name="progSpotify" Margin="0,80,249,0" />
-            <ProgressBar x:Name="progSteam" Margin="0,100,249,0" />
-            <ProgressBar x:Name="progWinRAR" Margin="0,120,249,0" />
-            <ProgressBar x:Name="progVMware" Margin="0,140,249,0" />
-            <ProgressBar x:Name="progProtonVPN" Margin="0,160,249,0" />
-            <ProgressBar x:Name="progCC" Margin="0,180,249,0" />
-            <ProgressBar x:Name="progFigma" Margin="0,200,249,0" />
-
-
-            <!--  Download Speed & TimeLeft  -->
-            <Label
-                x:Name="lblDownloadSpeed"
-                Margin="0,284,91,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Content="Download Speed: "
-                Foreground="White" />
-            <Label
-                x:Name="lblEstimatedTimeLeft"
-                Margin="0,304,77,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Content="Estimated Time Left: "
-                Foreground="White" />
-            <!--  Download & Cancel Button  -->
-            <Button
-                x:Name="BtnDownload"
-                Width="75"
-                Margin="593,404,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Click="BtnDownload_Click"
-                Content="Download" />
-            <Button
-                x:Name="BtnCancelDownload"
-                Width="110"
-                Margin="673,404,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Click="BtnCancelDownload_Click"
-                Content="Cancel Download" />
-            <Button
-                x:Name="BtnSelectAll"
-                Width="65"
-                Margin="25,411,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Click="BtnSelectAll_Click"
-                Content="Select All" />
-            <Button
-                x:Name="BtnDeselectAll"
-                Width="75"
-                Margin="100,411,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Click="BtnDeselectAll_Click"
-                Content="Deselect All" />
-            <!--  Queue System  -->
-            <Label
-                Margin="624,56,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Download Queue"
-                FontFamily="Arial"
-                FontWeight="Medium"
-                Foreground="White" />
-            <ListBox
+        <!-- Download Queue -->
+        <GroupBox Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Header="Download Queue">
+            <Grid>
+                <ListBox
                 x:Name="lstDownloadQueue"
-                Width="150"
+                Width="140"
                 Height="200"
-                Margin="601,82,0,0"
-                HorizontalAlignment="Left"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 AllowDrop="True"
                 Background="#FF0A162B"
@@ -376,6 +245,43 @@
                 DragEnter="ListBox_Drop"
                 PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown" />
 
-        </Grid>
-    </Border>
+                <!--  Download Speed & TimeLeft  -->
+                <Label
+                x:Name="lblDownloadSpeed"
+                Margin="0,0,0,100"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="Download Speed: "
+                Foreground="White" Width="103" />
+                <Label
+                x:Name="lblEstimatedTimeLeft"
+                Margin="0,0,0,60"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="Estimated Time Left: "
+                Foreground="White" />
+
+                <!--  Download & Cancel Button  -->
+                <Button
+                    x:Name="BtnDownload"
+                    Width="60"
+                    Height="60"
+                    Margin="5,0,0,5"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Click="BtnDownload_Click"
+                    Content="Download" />
+                <Button
+                    x:Name="BtnCancelDownload"
+                    Width="60"
+                    Height="60"
+                    Margin="0,0,5,5"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Click="BtnCancelDownload_Click"
+                    Content="Cancel" />
+            </Grid>
+        </GroupBox>
+
+    </Grid>
 </Window>
