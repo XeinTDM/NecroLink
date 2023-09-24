@@ -15,12 +15,6 @@ namespace NecroLink
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
         public event EventHandler<DownloadCompletedEventArgs> DownloadCompleted;
-        private readonly int _speedLimit;
-
-        public FileDownloader(int speedLimit)
-        {
-            _speedLimit = speedLimit;
-        }
 
         public async Task<DownloadResult> TryDownloadAsync(string url, string destinationPath, CancellationToken cancellationToken)
         {
@@ -59,12 +53,6 @@ namespace NecroLink
                         buffer = pool.Rent();
                         ProgressChanged?.Invoke(this, new ProgressChangedEventArgs((int)((double)totalBytesRead / totalBytes * 100), null));
                         stopwatch.Restart();
-                        if (_speedLimit > 0)
-                        {
-                            var delay = (int)(totalBytesRead / (_speedLimit / 1000.0));
-                            await Task.Delay(delay, cancellationToken);
-                        }
-                        stopwatch.Restart();
                     }
                 }
                 pool.Return(buffer);
@@ -96,7 +84,7 @@ namespace NecroLink
 
             for (int i = 0; i < poolSize; i++)
             {
-                pool.Push(new FileDownloader(speedLimit));
+                pool.Push(new FileDownloader());
             }
         }
 
@@ -110,7 +98,7 @@ namespace NecroLink
             {
                 // If the pool is empty, create a new FileDownloader
                 // You could also throw an exception or block until a FileDownloader is returned to the pool
-                return new FileDownloader(0);
+                return new FileDownloader();
             }
         }
 

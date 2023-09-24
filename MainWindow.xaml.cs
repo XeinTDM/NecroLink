@@ -75,7 +75,6 @@ namespace NecroLink
             if (ChkFigma.IsChecked == true)
                 AddToDownloadQueue("https://www.figma.com/download/desktop/win", "Figma-Setup.exe", progFigma);
 
-
             StartNextDownload();
             CleanUpTempFiles();
         }
@@ -112,7 +111,7 @@ namespace NecroLink
                 downloadQueue.RemoveAt(0);
                 lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
 
-                var downloader = new FileDownloader(speedLimit);
+                var downloader = new FileDownloader();
                 downloader.ProgressChanged += (s, e) =>
                 {
                     progressBar.Value = e.ProgressPercentage;
@@ -137,9 +136,9 @@ namespace NecroLink
                 {
                     var (url, fileName, progressBar) = downloadQueue[0];
                     downloadQueue.RemoveAt(0);
-                    lstDownloadQueue.Items.RemoveAt(0); // Remove the file name from the queue
+                    lstDownloadQueue.Items.RemoveAt(0);
 
-                    var downloader = new FileDownloader(speedLimit);
+                    var downloader = new FileDownloader();
                     downloader.ProgressChanged += (s, e) =>
                     {
                         progressBar.Value = e.ProgressPercentage;
@@ -256,17 +255,17 @@ namespace NecroLink
             lstDownloadQueue.Items.Insert(targetIdx, droppedData);
         }
 
-        private void BtnApplyLimit_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(txtSpeedLimit.Text, out int limit))
-            {
-                // Convert from B/s to mb/s
-                double speedLimitInMbps = (double)limit / 1048576;
+        //private void BtnApplyLimit_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (int.TryParse(txtSpeedLimit.Text, out int limit))
+        //    {
+        //        // Convert from B/s to mb/s
+        //        double speedLimitInMbps = (double)limit / 1048576;
 
-                // Update the speedLimit variable with the value in Mbps
-                speedLimit = (int)(speedLimitInMbps * 1024 * 1024); // Convert back to B/s
-            }
-        }
+        //        // Update the speedLimit variable with the value in Mbps
+        //        speedLimit = (int)(speedLimitInMbps * 1024 * 1024); // Convert back to B/s
+        //    }
+        //}
 
         private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
         {

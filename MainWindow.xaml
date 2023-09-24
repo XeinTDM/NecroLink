@@ -78,7 +78,7 @@
         <Style x:Key="LabelStyle" TargetType="Label">
             <Setter Property="Foreground" Value="white" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontFamily" Value="Ariel" />
+            <Setter Property="FontFamily" Value="Arial" />
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
@@ -137,7 +137,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Content="Other"
-                FontFamily="Ariel"
+                FontFamily="Arial"
                 FontWeight="Bold"
                 Foreground="white" />
 
@@ -338,30 +338,6 @@
                 VerticalAlignment="Top"
                 Click="BtnCancelDownload_Click"
                 Content="Cancel Download" />
-            <!--  Speed Limit  -->
-            <Label
-                Width="115"
-                Height="26"
-                Margin="406,376,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Content="Speed Limit (MB/s)"
-                Foreground="White" />
-            <TextBox
-                x:Name="txtSpeedLimit"
-                Width="70"
-                Margin="406,400,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top" />
-            <Button
-                x:Name="BtnApplyLimit"
-                Width="39"
-                Margin="481,399,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Click="BtnApplyLimit_Click"
-                Content="Apply" />
-            <!--  (De)Select  -->
             <Button
                 x:Name="BtnSelectAll"
                 Width="65"
@@ -384,7 +360,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Content="Download Queue"
-                FontFamily="Ariel"
+                FontFamily="Arial"
                 FontWeight="Medium"
                 Foreground="White" />
             <ListBox
