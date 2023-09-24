@@ -41,6 +41,7 @@ namespace NecroLink
 
                 while ((bytesRead = await streamToReadFrom.ReadAsync(buffer, cancellationToken)) != 0)
                 {
+                    Logger.Debug("Reading stream...");
                     await streamToWriteTo.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
                     totalBytesRead += bytesRead;
                     if (stopwatch.ElapsedMilliseconds > 1000)
@@ -61,6 +62,14 @@ namespace NecroLink
                 Logger.Info($"Finished download from {url}. Total time: {stopwatch.Elapsed.TotalSeconds} seconds");
                 result.Success = true;
 
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.Error(ex, "HTTP request failed.");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Logger.Warn(ex, "Download task was canceled.");
             }
             catch (Exception ex)
             {
